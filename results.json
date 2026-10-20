@@ -3,38 +3,9 @@
     "truoc": {
       "bankDown": {
         "code": 500,
-        "ms": 389,
+        "ms": 387,
         "body": {
           "error": "",
-          "paymentId": "P1",
-          "status": "FAILED"
-        }
-      },
-      "feesWhileDown": {
-        "code": 200,
-        "ms": 1
-      },
-      "afterBankUp": {
-        "code": 201,
-        "status": "PAID"
-      },
-      "bankUrl4999": {
-        "code": 500,
-        "ms": 53
-      },
-      "pass": {
-        "503 + JSON error trong < 1,5s": false,
-        "GET fees vẫn 200 nhanh": true,
-        "Bank lên lại → 201 không restart Fee": true,
-        "BANK_URL=:4999 hành vi giống": false
-      }
-    },
-    "sau": {
-      "bankDown": {
-        "code": 503,
-        "ms": 67,
-        "body": {
-          "error": "Lỗi kết nối ngân hàng: ECONNREFUSED — chưa trừ tiền",
           "paymentId": "P1",
           "status": "FAILED"
         }
@@ -48,8 +19,37 @@
         "status": "PAID"
       },
       "bankUrl4999": {
-        "code": 503,
+        "code": 500,
         "ms": 47
+      },
+      "pass": {
+        "503 + JSON error trong < 1,5s": false,
+        "GET fees vẫn 200 nhanh": true,
+        "Bank lên lại → 201 không restart Fee": true,
+        "BANK_URL=:4999 hành vi giống": false
+      }
+    },
+    "sau": {
+      "bankDown": {
+        "code": 503,
+        "ms": 47,
+        "body": {
+          "error": "Lỗi kết nối ngân hàng: ECONNREFUSED — chưa trừ tiền",
+          "paymentId": "P1",
+          "status": "FAILED"
+        }
+      },
+      "feesWhileDown": {
+        "code": 200,
+        "ms": 1
+      },
+      "afterBankUp": {
+        "code": 201,
+        "status": "PAID"
+      },
+      "bankUrl4999": {
+        "code": 503,
+        "ms": 48
       },
       "pass": {
         "503 + JSON error trong < 1,5s": true,
@@ -64,7 +64,7 @@
       "single": {
         "code": 201,
         "status": "PAID",
-        "ms": 5085
+        "ms": 5070
       },
       "burst20": {
         "codes": {
@@ -72,11 +72,11 @@
           "504": 0,
           "other": 0
         },
-        "maxMs": 5064
+        "maxMs": 5052
       },
       "feesDuringBurst": {
         "code": 200,
-        "ms": 2
+        "ms": 3
       },
       "pass": {
         "504 + PENDING": false,
@@ -88,7 +88,7 @@
       "single": {
         "code": 504,
         "status": "PENDING",
-        "ms": 4034
+        "ms": 4033
       },
       "burst20": {
         "codes": {
@@ -96,7 +96,7 @@
           "504": 20,
           "other": 0
         },
-        "maxMs": 4035
+        "maxMs": 4045
       },
       "feesDuringBurst": {
         "code": 200,
@@ -112,7 +112,7 @@
   "tinhHuong3": {
     "truoc": {
       "ok200": 200,
-      "totalMs": 450,
+      "totalMs": 518,
       "connectionsAfter200": 201,
       "okAfterIdle": 5,
       "connectionsTotal": 207,
@@ -124,7 +124,7 @@
     },
     "sau": {
       "ok200": 200,
-      "totalMs": 319,
+      "totalMs": 403,
       "connectionsAfter200": 11,
       "okAfterIdle": 5,
       "connectionsTotal": 13,
@@ -138,32 +138,32 @@
   "tinhHuong4": {
     "truoc": {
       "a": {
-        "paid": 40,
+        "paid": 46,
         "failedCodes": [
           "500 FAILED"
         ],
         "bankCharges": 60,
         "duplicates": 0,
-        "debtDrop": 40000,
-        "paidAmount": 40000,
-        "maxMs": 76
+        "debtDrop": 46000,
+        "paidAmount": 46000,
+        "maxMs": 63
       },
       "b": {
-        "paid": 35,
+        "paid": 42,
         "failedCodes": [
           "500 FAILED"
         ],
-        "bankCharges": 35,
+        "bankCharges": 42,
         "duplicates": 0,
-        "debtDrop": 35000,
-        "paidAmount": 35000,
-        "maxMs": 63
+        "debtDrop": 42000,
+        "paidAmount": 42000,
+        "maxMs": 69
       },
       "c": {
         "code": 402,
         "status": "FAILED",
         "bankRequests": 1,
-        "ms": 71
+        "ms": 72
       },
       "pass": {
         "(a) duplicates = 0": true,
@@ -184,7 +184,7 @@
         "duplicates": 0,
         "debtDrop": 60000,
         "paidAmount": 60000,
-        "maxMs": 66
+        "maxMs": 72
       },
       "b": {
         "paid": 60,
@@ -193,13 +193,13 @@
         "duplicates": 0,
         "debtDrop": 60000,
         "paidAmount": 60000,
-        "maxMs": 370
+        "maxMs": 792
       },
       "c": {
         "code": 402,
         "status": "FAILED",
         "bankRequests": 1,
-        "ms": 67
+        "ms": 68
       },
       "pass": {
         "(a) duplicates = 0": true,
@@ -210,6 +210,34 @@
         "(b) không trừ tiền hai lần": true,
         "(c) 402 + bank nhận đúng 1 yêu cầu": true,
         "Vẫn ≤ 4,5s": true
+      }
+    }
+  },
+  "doiSoatPending": {
+    "sau": {
+      "paid": {
+        "payCode": 504,
+        "payStatus": "PENDING",
+        "pendingAmountBefore": 1000,
+        "finalStatus": "PAID",
+        "settledAfterMs": 2115,
+        "debtDrop": 1000,
+        "pendingAmountAfter": 0,
+        "bankCharges": 1
+      },
+      "failed": {
+        "payCode": 504,
+        "payStatus": "PENDING",
+        "pendingAmountBefore": 1000,
+        "finalStatus": "FAILED",
+        "settledAfterMs": 5245,
+        "debtDrop": 0,
+        "pendingAmountAfter": 0,
+        "bankCharges": 0
+      },
+      "pass": {
+        "Bank đã trừ tiền: PENDING -> PAID, công nợ giảm đúng": true,
+        "Bank chưa trừ tiền: PENDING -> FAILED, công nợ giữ nguyên": true
       }
     }
   }

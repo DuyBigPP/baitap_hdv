@@ -8,13 +8,19 @@ const LIMIT = 20_000_000;
 
 const stats = { connections: 0, requests: 0, charges: 0, duplicates: 0 };
 const byKey = new Map();
-const chargedRefs = new Set();
+const byRef = new Map();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const app = express();
 app.use(express.json());
 
 app.get('/stats', (req, res) => res.json(stats));
+
+app.get('/charges/:reference', (req, res) => {
+  const charge = byRef.get(req.params.reference);
+  if (!charge) return res.status(404).json({ error: 'Không có giao dịch cho reference này' });
+  res.json(charge);
+});
 
 app.post('/charges', async (req, res) => {
   stats.requests++;
@@ -32,10 +38,10 @@ app.post('/charges', async (req, res) => {
   }
   if (amount > LIMIT) return res.status(402).json({ error: 'Vượt hạn mức 20.000.000đ' });
 
-  if (chargedRefs.has(reference)) stats.duplicates++;
-  chargedRefs.add(reference);
+  if (byRef.has(reference)) stats.duplicates++;
   stats.charges++;
   const charge = { chargeId: `C${stats.charges}`, reference, amount };
+  byRef.set(reference, charge);
   if (key) byKey.set(key, charge);
 
   if (Math.random() < DROP_RATE) return req.socket.destroy();

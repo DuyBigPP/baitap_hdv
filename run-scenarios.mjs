@@ -42,9 +42,9 @@ async function pool(n, conc, fn) {
   return out;
 }
 
-async function withServices(naive, bankEnv, fn) {
+async function withServices(naive, bankEnv, fn, feeEnv = {}) {
   const bank = start('bank.mjs', bankEnv);
-  const fee = start('fee.mjs', naive ? { NAIVE: '1' } : {});
+  const fee = start('fee.mjs', { ...feeEnv, ...(naive ? { NAIVE: '1' } : {}) });
   try { await bankUp(); await feeUp(); return await fn(); } finally { await stop(fee, bank); }
 }
 
@@ -151,9 +151,36 @@ async function s4all(naive) {
   return { a, b, c, pass };
 }
 
+const reconcileCase = (bankEnv) => withServices(false, bankEnv, async () => {
+  const debt0 = (await fees()).json.debt;
+  const x = await pay(1000);
+  const pendingNow = (await fees()).json.pendingAmount;
+  const t = performance.now();
+  let p;
+  do { await sleep(250); p = (await call('GET', `${FEE}/payments/${x.json?.paymentId}`)).json; }
+  while (p?.status === 'PENDING' && performance.now() - t < 20_000);
+  const f = (await fees()).json;
+  return {
+    payCode: x.code, payStatus: x.json?.status, pendingAmountBefore: pendingNow,
+    finalStatus: p?.status, settledAfterMs: Math.round(performance.now() - t),
+    debtDrop: debt0 - f.debt, pendingAmountAfter: f.pendingAmount, bankCharges: (await stats()).charges,
+  };
+}, { RECONCILE_MS: '1000', PENDING_EXPIRE_MS: '8000' });
+
+async function s5() {
+  const paid = await reconcileCase({ DELAY_MS: '5000' });
+  const failed = await reconcileCase({ DELAY_MS: '5000', FAIL_RATE: '1' });
+  const pass = {
+    'Bank đã trừ tiền: PENDING -> PAID, công nợ giảm đúng': paid.payCode === 504 && paid.finalStatus === 'PAID' && paid.debtDrop === 1000 && paid.pendingAmountAfter === 0 && paid.bankCharges === 1,
+    'Bank chưa trừ tiền: PENDING -> FAILED, công nợ giữ nguyên': failed.payCode === 504 && failed.finalStatus === 'FAILED' && failed.debtDrop === 0 && failed.pendingAmountAfter === 0 && failed.bankCharges === 0,
+  };
+  return { paid, failed, pass };
+}
+
 const results = {};
-for (const [name, fn] of [['tinhHuong1', s1], ['tinhHuong2', s2], ['tinhHuong3', s3], ['tinhHuong4', s4all]]) {
-  for (const mode of ['truoc', 'sau']) {
+const plan = [['tinhHuong1', s1], ['tinhHuong2', s2], ['tinhHuong3', s3], ['tinhHuong4', s4all], ['doiSoatPending', s5, ['sau']]];
+for (const [name, fn, modes = ['truoc', 'sau']] of plan) {
+  for (const mode of modes) {
     console.log(`>> ${name} — ${mode}`);
     (results[name] ??= {})[mode] = await fn(mode === 'truoc');
     console.log(JSON.stringify(results[name][mode], null, 1));

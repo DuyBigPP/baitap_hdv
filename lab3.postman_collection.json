@@ -1,0 +1,997 @@
+{
+  "info": {
+    "name": "Lab 3 - Thanh toán học phí (Fee Service + Ngân hàng)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "fee",
+      "value": "http://localhost:4001"
+    },
+    {
+      "key": "bank",
+      "value": "http://localhost:4002"
+    },
+    {
+      "key": "paymentId",
+      "value": "P1"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Cơ bản",
+      "description": "Chạy: node bank.mjs và node fee.mjs",
+      "item": [
+        {
+          "name": "Công nợ SV1 (50.000.000)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{fee}}/students/1/fees",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "1",
+                "fees"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Công nợ SV2 (0)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{fee}}/students/2/fees",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "2",
+                "fees"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Công nợ SV3 (3.200.000)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{fee}}/students/3/fees",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "3",
+                "fees"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Thanh toán 100.000 cho SV1 -> 201 PAID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{fee}}/students/1/payments",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "1",
+                "payments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('PAID', () => pm.expect(j.status).to.eql('PAID'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Xem lệnh thanh toán vừa tạo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{fee}}/payments/{{paymentId}}",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "payments",
+                "{{paymentId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Số tiền không hợp lệ -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{fee}}/students/1/payments",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "1",
+                "payments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": -5\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vượt công nợ SV3 -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{fee}}/students/3/payments",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "3",
+                "payments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 5000000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "SV2 không còn nợ -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{fee}}/students/2/payments",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "2",
+                "payments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sinh viên không tồn tại -> 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{fee}}/students/9/payments",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "9",
+                "payments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1. Ngân hàng không kết nối được",
+      "description": "TẮT bank (chỉ chạy node fee.mjs). Gọi 2 request đầu, rồi bật node bank.mjs và gọi request cuối (không restart Fee).",
+      "item": [
+        {
+          "name": "Bank tắt: thanh toán -> 503 FAILED < 1,5s",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{fee}}/students/1/payments",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "1",
+                "payments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 503', () => pm.response.to.have.status(503));",
+                  "pm.test('FAILED', () => pm.expect(j.status).to.eql('FAILED'));",
+                  "pm.test('< 1500ms', () => pm.expect(pm.response.responseTime).to.be.below(1500));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bank tắt: xem công nợ vẫn 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{fee}}/students/1/fees",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "1",
+                "fees"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bank đã bật lại: thanh toán -> 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{fee}}/students/1/payments",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "1",
+                "payments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Ngân hàng chậm",
+      "description": "Chạy bank: DELAY_MS=5000 node bank.mjs (PowerShell: $env:DELAY_MS=5000; node bank.mjs).",
+      "item": [
+        {
+          "name": "Thanh toán -> 504 PENDING <= 4,5s",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{fee}}/students/1/payments",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "1",
+                "payments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 504', () => pm.response.to.have.status(504));",
+                  "pm.test('PENDING', () => pm.expect(j.status).to.eql('PENDING'));",
+                  "pm.test('<= 4500ms', () => pm.expect(pm.response.responseTime).to.be.at.most(4500));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đối soát: sau ~10s lệnh chuyển PAID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{fee}}/payments/{{paymentId}}",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "payments",
+                "{{paymentId}}"
+              ]
+            },
+            "description": "Bank vẫn trừ tiền sau 5s; job đối soát (mỗi 5s) hỏi GET /charges/{reference} và chốt PAID."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Công nợ: pendingAmount về 0 sau đối soát",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{fee}}/students/1/fees",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "1",
+                "fees"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Duy trì kết nối",
+      "description": "Dùng Collection Runner chạy request đầu 200 lần, rồi xem /stats: connections nhỏ. Bản đo đầy đủ (10 song song): node run-scenarios.mjs.",
+      "item": [
+        {
+          "name": "Thanh toán 1.000",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{fee}}/students/1/payments",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "1",
+                "payments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bank /stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{bank}}/stats",
+              "host": [
+                "{{bank}}"
+              ],
+              "path": [
+                "stats"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Đứt giữa chừng / lỗi tạm thời / từ chối",
+      "description": "(a) DROP_RATE=0.3, (b) FAIL_RATE=0.3: chạy request đầu 60 lần bằng Collection Runner rồi xem /stats (duplicates = 0). (c) bank bình thường.",
+      "item": [
+        {
+          "name": "Thanh toán 1.000 (a/b)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{fee}}/students/1/payments",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "1",
+                "payments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "(c) 25.000.000 -> 402",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{fee}}/students/1/payments",
+              "host": [
+                "{{fee}}"
+              ],
+              "path": [
+                "students",
+                "1",
+                "payments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 25000000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 402', () => pm.response.to.have.status(402));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bank /stats (duplicates phải = 0)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{bank}}/stats",
+              "host": [
+                "{{bank}}"
+              ],
+              "path": [
+                "stats"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('duplicates = 0', () => pm.expect(j.duplicates).to.eql(0));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ngân hàng (gọi trực tiếp)",
+      "description": "Gọi thẳng cổng 4002.",
+      "item": [
+        {
+          "name": "Trừ tiền với Idempotency-Key -> 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "TEST-1"
+              }
+            ],
+            "url": {
+              "raw": "{{bank}}/charges",
+              "host": [
+                "{{bank}}"
+              ],
+              "path": [
+                "charges"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reference\": \"TEST-1\",\n  \"amount\": 1000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Gửi lại cùng khóa -> giao dịch cũ, không trừ thêm",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "TEST-1"
+              }
+            ],
+            "url": {
+              "raw": "{{bank}}/charges",
+              "host": [
+                "{{bank}}"
+              ],
+              "path": [
+                "charges"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reference\": \"TEST-1\",\n  \"amount\": 1000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tra cứu giao dịch theo reference",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{bank}}/charges/TEST-1",
+              "host": [
+                "{{bank}}"
+              ],
+              "path": [
+                "charges",
+                "TEST-1"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Số tiền không hợp lệ -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{bank}}/charges",
+              "host": [
+                "{{bank}}"
+              ],
+              "path": [
+                "charges"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reference\": \"TEST-2\",\n  \"amount\": 0\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vượt hạn mức -> 402",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{bank}}/charges",
+              "host": [
+                "{{bank}}"
+              ],
+              "path": [
+                "charges"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reference\": \"TEST-3\",\n  \"amount\": 25000000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 402', () => pm.response.to.have.status(402));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{bank}}/stats",
+              "host": [
+                "{{bank}}"
+              ],
+              "path": [
+                "stats"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.paymentId) pm.collectionVariables.set('paymentId', j.paymentId);",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
