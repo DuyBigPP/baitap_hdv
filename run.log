@@ -1,0 +1,216 @@
+>> tinhHuong1 — truoc
+{
+ "bankDown": {
+  "code": 500,
+  "ms": 389,
+  "body": {
+   "error": "",
+   "paymentId": "P1",
+   "status": "FAILED"
+  }
+ },
+ "feesWhileDown": {
+  "code": 200,
+  "ms": 1
+ },
+ "afterBankUp": {
+  "code": 201,
+  "status": "PAID"
+ },
+ "bankUrl4999": {
+  "code": 500,
+  "ms": 53
+ },
+ "pass": {
+  "503 + JSON error trong < 1,5s": false,
+  "GET fees vẫn 200 nhanh": true,
+  "Bank lên lại → 201 không restart Fee": true,
+  "BANK_URL=:4999 hành vi giống": false
+ }
+}
+>> tinhHuong1 — sau
+{
+ "bankDown": {
+  "code": 503,
+  "ms": 67,
+  "body": {
+   "error": "Lỗi kết nối ngân hàng: ECONNREFUSED — chưa trừ tiền",
+   "paymentId": "P1",
+   "status": "FAILED"
+  }
+ },
+ "feesWhileDown": {
+  "code": 200,
+  "ms": 2
+ },
+ "afterBankUp": {
+  "code": 201,
+  "status": "PAID"
+ },
+ "bankUrl4999": {
+  "code": 503,
+  "ms": 47
+ },
+ "pass": {
+  "503 + JSON error trong < 1,5s": true,
+  "GET fees vẫn 200 nhanh": true,
+  "Bank lên lại → 201 không restart Fee": true,
+  "BANK_URL=:4999 hành vi giống": true
+ }
+}
+>> tinhHuong2 — truoc
+{
+ "single": {
+  "code": 201,
+  "status": "PAID",
+  "ms": 5085
+ },
+ "burst20": {
+  "codes": {
+   "201": 20,
+   "504": 0,
+   "other": 0
+  },
+  "maxMs": 5064
+ },
+ "feesDuringBurst": {
+  "code": 200,
+  "ms": 2
+ },
+ "pass": {
+  "504 + PENDING": false,
+  "Tổng thời gian ≤ 4,5s": false,
+  "GET fees < 300ms khi 20 lệnh đang chờ": true
+ }
+}
+>> tinhHuong2 — sau
+{
+ "single": {
+  "code": 504,
+  "status": "PENDING",
+  "ms": 4034
+ },
+ "burst20": {
+  "codes": {
+   "201": 0,
+   "504": 20,
+   "other": 0
+  },
+  "maxMs": 4035
+ },
+ "feesDuringBurst": {
+  "code": 200,
+  "ms": 2
+ },
+ "pass": {
+  "504 + PENDING": true,
+  "Tổng thời gian ≤ 4,5s": true,
+  "GET fees < 300ms khi 20 lệnh đang chờ": true
+ }
+}
+>> tinhHuong3 — truoc
+{
+ "ok200": 200,
+ "totalMs": 450,
+ "connectionsAfter200": 201,
+ "okAfterIdle": 5,
+ "connectionsTotal": 207,
+ "pass": {
+  "200/200 thành công": true,
+  "Số kết nối TCP ≤ 20": false,
+  "Sau nhàn rỗi 6s vẫn thành công": true
+ }
+}
+>> tinhHuong3 — sau
+{
+ "ok200": 200,
+ "totalMs": 319,
+ "connectionsAfter200": 11,
+ "okAfterIdle": 5,
+ "connectionsTotal": 13,
+ "pass": {
+  "200/200 thành công": true,
+  "Số kết nối TCP ≤ 20": true,
+  "Sau nhàn rỗi 6s vẫn thành công": true
+ }
+}
+>> tinhHuong4 — truoc
+{
+ "a": {
+  "paid": 40,
+  "failedCodes": [
+   "500 FAILED"
+  ],
+  "bankCharges": 60,
+  "duplicates": 0,
+  "debtDrop": 40000,
+  "paidAmount": 40000,
+  "maxMs": 76
+ },
+ "b": {
+  "paid": 35,
+  "failedCodes": [
+   "500 FAILED"
+  ],
+  "bankCharges": 35,
+  "duplicates": 0,
+  "debtDrop": 35000,
+  "paidAmount": 35000,
+  "maxMs": 63
+ },
+ "c": {
+  "code": 402,
+  "status": "FAILED",
+  "bankRequests": 1,
+  "ms": 71
+ },
+ "pass": {
+  "(a) duplicates = 0": true,
+  "(a) ≥ 54/60 thành công": false,
+  "(a) lệnh lỗi trả 504 + PENDING": false,
+  "(a) công nợ giảm đúng tiền lệnh PAID": true,
+  "(b) ≥ 54/60 thành công": false,
+  "(b) không trừ tiền hai lần": true,
+  "(c) 402 + bank nhận đúng 1 yêu cầu": true,
+  "Vẫn ≤ 4,5s": true
+ }
+}
+>> tinhHuong4 — sau
+{
+ "a": {
+  "paid": 60,
+  "failedCodes": [],
+  "bankCharges": 60,
+  "duplicates": 0,
+  "debtDrop": 60000,
+  "paidAmount": 60000,
+  "maxMs": 66
+ },
+ "b": {
+  "paid": 60,
+  "failedCodes": [],
+  "bankCharges": 60,
+  "duplicates": 0,
+  "debtDrop": 60000,
+  "paidAmount": 60000,
+  "maxMs": 370
+ },
+ "c": {
+  "code": 402,
+  "status": "FAILED",
+  "bankRequests": 1,
+  "ms": 67
+ },
+ "pass": {
+  "(a) duplicates = 0": true,
+  "(a) ≥ 54/60 thành công": true,
+  "(a) lệnh lỗi trả 504 + PENDING": true,
+  "(a) công nợ giảm đúng tiền lệnh PAID": true,
+  "(b) ≥ 54/60 thành công": true,
+  "(b) không trừ tiền hai lần": true,
+  "(c) 402 + bank nhận đúng 1 yêu cầu": true,
+  "Vẫn ≤ 4,5s": true
+ }
+}
+
+Bản sau khi sửa: ĐẠT tất cả tiêu chí
